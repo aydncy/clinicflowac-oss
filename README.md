@@ -1,2 +1,60 @@
 # clinicflowac-oss
 Open-source Flutter starter for clinic workflows (WhatsApp/email/SMS)
+# ClinicFlowAC (OSS)
+**WhatsApp / Email / SMS → Appointment + Documents + Consent + Audit Trail**
+
+ClinicFlowAC is an open-source Flutter starter and reference architecture for building clinic workflow agents.
+It turns unstructured patient messages into verified, auditable operational workflows—without requiring a complex EHR rollout.
+
+Founder: Aydın Ceylan (Antalya, TR)  
+LinkedIn: https://www.linkedin.com/in/aydinceylan07/  
+GitHub: https://github.com/aydncy
+
+## Why this matters (the global gap)
+Small clinics run on WhatsApp and email. The result is operational chaos:
+missed appointments, missing documents, unclear responsibility, and no audit trail.
+ClinicFlowAC focuses on **execution + proof**, not chat.
+
+## What ClinicFlowAC does
+- Captures appointment intent (book / reschedule / cancel) and routes it to the right workflow
+- Collects required documents through secure links (not inside Issues)
+- Records consent events and generates an audit log (“proof pack”)
+- Supports channel failover: WhatsApp → email → SMS (configurable)
+
+## Who it’s for
+- Independent clinics, dental clinics, aesthetic clinics, polyclinics
+- Builders and teams who want a production-grade starting point for “agentic workflows” in healthcare operations
+
+## Roadmap (90 days) — measurable outputs
+Phase 1 (0–30 days)
+- Flutter starter + self-serve onboarding (first clinic in 10 minutes)
+- Appointment workflow + reminder scheduler
+- Minimal dashboard (today / tomorrow / overdue)
+
+Phase 2 (31–60 days)
+- Document upload portal + checklist per appointment type
+- Consent capture + immutable event log
+- Exportable audit report (PDF/JSON)
+
+Phase 3 (61–90 days)
+- WhatsApp Cloud API integration (templates + webhooks)
+- Email integration (Microsoft Graph) + SMS via CPaaS
+- 5 pilot clinics, first paid plan
+
+## Funding & support (non-dilutive)
+We are seeking non-dilutive funding and sponsorship to accelerate a 90‑day build sprint:
+- MVP delivery + documentation + security hardening
+- Pilot onboarding and measurable outcomes
+
+## Contributing
+Issues and PRs are welcome. Please include:
+- Expected behavior
+- Steps to reproduce
+- Screenshots/logs (avoid sensitive data)
+
+## Security
+Do not submit personal or sensitive health data in issues.
+Please report vulnerabilities privately (see SECURITY.md).
+
+## License
+MIT
