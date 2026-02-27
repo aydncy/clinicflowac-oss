@@ -56,5 +56,8 @@ Issues and PRs are welcome. Please include:
 Do not submit personal or sensitive health data in issues.
 Please report vulnerabilities privately (see SECURITY.md).
 
+## Sponsoring
+https://github.com/sponsors/aydncy
+
 ## License
 MIT
