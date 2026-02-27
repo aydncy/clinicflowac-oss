@@ -57,6 +57,7 @@ Do not submit personal or sensitive health data in issues.
 Please report vulnerabilities privately (see SECURITY.md).
 
 ## Sponsoring
+If this project helps you, consider sponsoring the 90-day build sprint:
 https://github.com/sponsors/aydncy
 
 ## License
