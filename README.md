@@ -1,6 +1,6 @@
-# clinicflowac-oss
-Open-source Flutter starter for clinic workflows (WhatsApp/email/SMS)
 # ClinicFlowAC (OSS)
+Open-source Flutter starter for clinic workflows (WhatsApp/email/SMS)
+
 **WhatsApp / Email / SMS → Appointment + Documents + Consent + Audit Trail**
 
 ClinicFlowAC is an open-source Flutter starter and reference architecture for building clinic workflow agents.
@@ -10,10 +10,40 @@ Founder: Aydın Ceylan (Antalya, TR)
 LinkedIn: https://www.linkedin.com/in/aydinceylan07/  
 GitHub: https://github.com/aydncy
 
+## Quickstart
+
+This repository is a Flutter starter/reference architecture for clinic workflows.
+It is not a medical product and ships with demo data only.
+
+### Prerequisites
+- Flutter SDK (stable)
+- A device/emulator (Android recommended)
+- Git
+
+### Run (demo mode)
+1. Clone the repo:
+   - `git clone https://github.com/aydncy/clinicflowac-oss.git`
+   - `cd clinicflowac-oss`
+2. Install dependencies:
+   - `flutter pub get`
+3. Run on a device/emulator:
+   - `flutter run`
+
+### Demo scenario (what to try)
+- Create an appointment (patient + date/time).
+- Attach a document (demo/placeholder).
+- Record/update consent status.
+- Export a “proof pack” (JSON + human-readable summary) and inspect what is included.
+
+### Repository structure (high level)
+- `lib/` app code
+- `test/` tests (if present)
+- `docs/` additional documentation (if present)
+
 ## Why this matters (the global gap)
 Small clinics run on WhatsApp and email. The result is operational chaos:
 missed appointments, missing documents, unclear responsibility, and no audit trail.
-ClinicFlowAC focuses on **execution + proof**, not chat.
+ClinicFlowAC focuses on execution + proof, not chat.
 
 ## What ClinicFlowAC does
 - Captures appointment intent (book / reschedule / cancel) and routes it to the right workflow
