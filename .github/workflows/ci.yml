@@ -2,34 +2,55 @@ name: CI
 
 on:
   push:
+    branches: [ main, develop ]
   pull_request:
+    branches: [ main, develop ]
 
 jobs:
-  flutter:
+  test-and-coverage:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-
+    
     steps:
       - uses: actions/checkout@v4
-
+      
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.22.3"
           channel: "stable"
-          cache: false
-
+          cache: true
+      
       - name: Flutter doctor
         run: flutter doctor -v
-
-      - name: Install deps
+      
+      - name: Get dependencies
         run: flutter pub get
-
-      - name: Codegen
+      
+      - name: Code generation
         run: flutter pub run build_runner build --delete-conflicting-outputs
-
-      - name: Analyze
+      
+      - name: Lint & Analyze
         run: flutter analyze
-
-      - name: Test
-        run: flutter test
+      
+      - name: Format check
+        run: flutter format --set-exit-if-changed .
+      
+      - name: Run tests with coverage
+        run: flutter test --coverage
+      
+      - name: Install lcov
+        run: sudo apt-get install -y lcov
+      
+      - name: Generate coverage report
+        run: |
+          lcov --remove coverage/lcov.info 'lib/**.freezed.dart' 'lib/**.g.dart' -o coverage/lcov.info
+          lcov --list coverage/lcov.info
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/lcov.info
+          flags: flutter
+          name: codecov-umbrella
+          fail_ci_if_error: false
