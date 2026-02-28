@@ -5,14 +5,14 @@ class DemoClinic {
   static const String clinicName = "Demo Dental Clinic";
   static const String timezone = "Europe/Istanbul";
   static const String defaultProvider = "Dr. Demo";
-  
-  // Demo events - bu silinebilir, sadece demo için
+
+  /// Demo seed events
   static List<Event> seedEvents = [
     Event(
-      id: "demo-appointment-1",
+      id: "evt-001",
       type: EventType.appointmentCreated,
       aggregateId: "appointment-001",
-      timestamp: DateTime.now().subtract(Duration(days: 1)),
+      timestamp: DateTime(2026, 2, 28, 14, 0),
       actor: "system",
       payload: {
         "patientName": "Ayşe Yılmaz",
@@ -22,10 +22,10 @@ class DemoClinic {
       },
     ),
     Event(
-      id: "demo-document-1",
+      id: "evt-002",
       type: EventType.documentUploaded,
       aggregateId: "appointment-001",
-      timestamp: DateTime.now(),
+      timestamp: DateTime(2026, 2, 28, 14, 30),
       actor: "staff-001",
       payload: {
         "documentType": "ID card",
