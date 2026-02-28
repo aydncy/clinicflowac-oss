@@ -9,12 +9,12 @@ environment:
   flutter: ">=3.0.0"
 
 dependencies:
-http: ^1.2.2
   flutter:
     sdk: flutter
+  http: ^1.2.2
   freezed_annotation: ^2.4.1
   json_annotation: ^4.8.1
-  riverpod: ^2.4.9  # State management
+  riverpod: ^2.4.9
 
 dev_dependencies:
   flutter_test:
