@@ -1,16 +1,31 @@
-// lib/services/whatsapp_service.dart
-import '../models/event.dart';
+import 'package:clinicflowac/models/event.dart';
 
-/// WhatsApp Cloud API webhook handler (starter)
 class WhatsAppService {
-  /// Incoming webhook payload from WhatsApp
-  void handleWebhook(Map<String, dynamic> payload) {
-    // Extract message content and sender
-    final String sender = payload['entry']?[0]?['changes']?[0]?['value']?['contacts']?[0]?['wa_id'] ?? 'unknown';
-    final String message = payload['entry']?[0]?['changes']?[0]?['value']?['messages']?[0]?['text']?['body'] ?? '';
+  String parseMessageIntent(String message) {
+    final lower = message.toLowerCase();
     
-    // Parse intent (simple keyword matching for MVP)
-    final String intent = _parseIntent(message);
+    if (lower.contains('appoint') || lower.contains('book')) {
+      return 'appointment_request';
+    } else if (lower.contains('cancel')) {
+      return 'appointment_cancel';
+    } else if (lower.contains('reschedule') || lower.contains('change')) {
+      return 'appointment_reschedule';
+    }
     
-    // Create event
-    final Event event
+    return 'unknown';
+  }
+
+  Event createEventFromMessage(String senderId, String message) {
+    final intent = parseMessageIntent(message);
+    
+    return Event(
+      id: 'evt_${DateTime.now().millisecondsSinceEpoch}',
+      type: intent,
+      timestamp: DateTime.now(),
+      actor: 'patient',
+      entityKind: 'message',
+      entityId: senderId,
+      data: {'message': message, 'intent': intent},
+    );
+  }
+}
