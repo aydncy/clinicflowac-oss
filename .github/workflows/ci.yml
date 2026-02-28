@@ -1,4 +1,5 @@
 name: CI
+
 on:
   push:
   pull_request:
@@ -6,15 +7,29 @@ on:
 jobs:
   flutter:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+
     steps:
       - uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.x'
-          channel: 'stable'
+          flutter-version: "3.22.3"
+          channel: "stable"
+          cache: false
 
-      - run: flutter --version
-      - run: flutter pub get
-      - run: flutter analyze
-      - run: flutter test
+      - name: Flutter doctor
+        run: flutter doctor -v
+
+      - name: Install deps
+        run: flutter pub get
+
+      - name: Codegen
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
