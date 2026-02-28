@@ -1,4 +1,3 @@
-
 # ClinicFlowAC
 
 ## Open Execution Infrastructure for Small-Clinic Healthcare
@@ -31,10 +30,10 @@ Across the world, millions of small and mid-sized clinics operate critical workf
 - SMS
 - Phone calls
 
-What exists:
+What exists:  
 Digital communication.
 
-What does not exist:
+What does not exist:  
 Structured execution.
 
 The consequences:
@@ -46,7 +45,7 @@ The consequences:
 - No audit trail  
 - No defensible proof  
 
-Healthcare is digitized at the interface.
+Healthcare is digitized at the interface.  
 It is fragmented at the execution layer.
 
 ClinicFlowAC addresses the execution layer.
@@ -94,7 +93,7 @@ Configurable failover routing:
 
 WhatsApp → Email → SMS
 
-Channel becomes transport.
+Channel becomes transport.  
 Workflow becomes source of truth.
 
 ---
@@ -116,9 +115,22 @@ It stabilizes operations before clinical integration.
 
 ---
 
+# Public Deliverables (v0.1)
+
+ClinicFlowAC already provides publicly inspectable foundational artifacts:
+
+- Architecture overview (`docs/architecture.md`)
+- Minimal data model (`docs/data-model.md`)
+- Threat model (`docs/threat-model.md`)
+- Proof pack sample format (`examples/proof-pack/sample.json`)
+
+These artifacts establish the baseline for an open, interoperable execution infrastructure.
+
+---
+
 # Why This Matters
 
-Most clinics do not fail due to lack of medical expertise.
+Most clinics do not fail due to lack of medical expertise.  
 They fail due to operational entropy.
 
 Operational entropy creates:
@@ -216,7 +228,7 @@ Observe:
 - 5 pilot clinics
 - First paid deployment
 
-Measured output.
+Measured output.  
 Not feature accumulation.
 
 ---
@@ -227,11 +239,11 @@ We are seeking non-dilutive funding and strategic sponsorship to accelerate a fo
 
 Primary objectives:
 
-- Production-grade MVP
-- Security hardening
-- Documentation
-- Pilot onboarding
-- Measurable operational improvements
+- Production-grade MVP  
+- Security hardening  
+- Documentation  
+- Pilot onboarding  
+- Measurable operational improvements  
 
 ClinicFlowAC aims to become the open operational backbone for small-clinic healthcare systems globally.
 
@@ -243,9 +255,9 @@ We welcome builders who believe healthcare needs better execution infrastructure
 
 Please include in PRs:
 
-- Clear expected behavior
-- Reproducible steps
-- Screenshots/logs (no sensitive data)
+- Clear expected behavior  
+- Reproducible steps  
+- Screenshots/logs (no sensitive data)  
 
 ---
 
