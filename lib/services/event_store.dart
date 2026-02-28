@@ -1,53 +1,34 @@
-// lib/services/event_store.dart
-import '../models/event.dart';
-import '../data/demo_clinic.dart';
-import 'package:http/http.dart' as http;  // Webhook için
+import 'package:clinicflowac/models/event.dart';
 
 class EventStore {
-  List<Event> _events = [];
-  
-  /// Get all events (append-only, never modified)
+  final List<Event> _events = [];
+
   List<Event> get events => List.unmodifiable(_events);
-  
-  /// Append new event (never overwrites)
+
   void append(Event event) {
     _events.add(event);
   }
 
-  /// WhatsApp webhook simülasyonu için
-  void simulateWhatsAppEvent(String message) {
-    final event = Event(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      timestamp: DateTime.now(),
-      type: EventType.appointment_request,  // EventType enum'un yoksa string kullan
-      data: {
-        'message': message,
-        'channel': 'whatsapp',
-        'intent': _parseWhatsAppIntent(message),
-      },
-      actor: 'whatsapp_user_${DateTime.now().millisecond}',
-    );
-    append(event);  // append method'unu kullan
+  List<Event> queryByType(String type) {
+    return _events.where((e) => e.type == type).toList();
   }
 
-  /// Basit WhatsApp intent parser (Türkçe/İngilizce)
-  String _parseWhatsAppIntent(String message) {
-    message = message.toLowerCase();
-    if (message.contains('randevu') || message.contains('randevu al') || message.contains('appointment')) {
-      return 'appointment_request';
-    }
-    if (message.contains('iptal') || message.contains('cancel')) {
-      return 'appointment_cancel';
-    }
-    if (message.contains('hatırlatma') || message.contains('reminder')) {
-      return 'reminder_sent';
-    }
-    return 'message_received';
+  List<Event> queryByEntity(String kind, String id) {
+    return _events.where((e) => e.entityKind == kind && e.entityId == id).toList();
   }
 
-  /// Gerçek WhatsApp webhook handler (ileride kullanılacak)
-  Future<void> handleWhatsAppWebhook(Map<String, dynamic> payload) async {
-    final message = payload['entry']?[0]?['changes']?[0]?['value']?['messages']?[0]?['text']?['body'] ?? 'unknown';
-    simulateWhatsAppEvent(message);
+  Map<String, dynamic> generateProofPack(String kind, String id) {
+    final events = queryByEntity(kind, id);
+    return {
+      'entity_kind': kind,
+      'entity_id': id,
+      'events': events.map((e) => {
+        'id': e.id,
+        'type': e.type,
+        'timestamp': e.timestamp.toIso8601String(),
+        'actor': e.actor,
+      }).toList(),
+      'generated_at': DateTime.now().toIso8601String(),
+    };
   }
 }
