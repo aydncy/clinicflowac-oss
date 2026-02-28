@@ -1,4 +1,3 @@
-// lib/models/event.dart
 enum EventType {
   appointmentCreated,
   appointmentRescheduled,
@@ -33,22 +32,4 @@ class Event {
     required this.actor,
     this.payload,
   });
-
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'type': type.name,
-    'aggregateId': aggregateId,
-    'timestamp': timestamp.toIso8601String(),
-    'actor': actor,
-    if (payload != null) 'payload': payload,
-  };
-
-  factory Event.fromJson(Map<String, dynamic> json) => Event(
-    id: json['id'] as String,
-    type: EventType.values.firstWhere((e) => e.name == json['type']),
-    aggregateId: json['aggregateId'] as String,
-    timestamp: DateTime.parse(json['timestamp'] as String),
-    actor: json['actor'] as String,
-    payload: json['payload'] as Map<String, dynamic>?,
-  );
 }
