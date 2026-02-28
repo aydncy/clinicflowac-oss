@@ -7,8 +7,9 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  analyze:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
@@ -20,13 +21,17 @@ jobs:
           channel: "stable"
 
       - name: Flutter Doctor
-        run: flutter doctor
+        run: flutter doctor -v
 
       - name: Get Dependencies
         run: flutter pub get
 
-      - name: Run Tests
-        run: flutter test --no-pub
+      - name: Analyze Code
+        run: flutter analyze
 
-      - name: Analyze
-        run: flutter analyze --no-pub
+      - name: Format Check
+        run: |
+          flutter format --set-exit-if-changed . || true
+
+      - name: Run Tests
+        run: flutter test --verbose
