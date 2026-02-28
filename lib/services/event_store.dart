@@ -1,34 +1,24 @@
-import 'package:clinicflowac/models/event.dart';
+// lib/services/event_store.dart
+import '../models/event.dart';
+import '../data/demo_clinic.dart';
 
 class EventStore {
   final List<Event> _events = [];
 
+  EventStore() {
+    // Load demo seed events on startup
+    _events.addAll(DemoClinic.seedEvents);
+  }
+
+  /// All events - immutable (append-only)
   List<Event> get events => List.unmodifiable(_events);
 
+  /// Append a new event - never overwrites
   void append(Event event) {
     _events.add(event);
   }
 
-  List<Event> queryByType(String type) {
-    return _events.where((e) => e.type == type).toList();
-  }
-
-  List<Event> queryByEntity(String kind, String id) {
-    return _events.where((e) => e.entityKind == kind && e.entityId == id).toList();
-  }
-
-  Map<String, dynamic> generateProofPack(String kind, String id) {
-    final events = queryByEntity(kind, id);
-    return {
-      'entity_kind': kind,
-      'entity_id': id,
-      'events': events.map((e) => {
-        'id': e.id,
-        'type': e.type,
-        'timestamp': e.timestamp.toIso8601String(),
-        'actor': e.actor,
-      }).toList(),
-      'generated_at': DateTime.now().toIso8601String(),
-    };
-  }
+  /// Filter by aggregateId
+  List<Event> eventsFor(String aggregateId) =>
+      _events.where((e) => e.aggregateId == aggregateId).toList();
 }
