@@ -128,6 +128,29 @@ These artifacts establish the baseline for an open, interoperable execution infr
 
 ---
 
+# Simulation Pilot (v0.1)
+
+ClinicFlowAC includes a reproducible simulation model comparing
+a baseline "message chaos" operational model with an event-based workflow model.
+
+## Simulated Results (1000 appointments / 90 days)
+
+- 33% relative reduction in missed appointments
+- 55% relative increase in document completion
+- 63% relative increase in structured consent coverage
+- 38% faster workflow completion
+- 100% audit exportability (proof pack availability)
+
+See:
+- `SIMULATION.md`
+- `simulation/assumptions.md`
+- `simulation/results.md`
+
+These are simulation estimates.
+Real-world pilot data will replace simulation values.
+
+---
+
 # Why This Matters
 
 Most clinics do not fail due to lack of medical expertise.  
