@@ -7,9 +7,8 @@ on:
     branches: [ main ]
 
 jobs:
-  flutter:
+  build:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v4
@@ -20,14 +19,14 @@ jobs:
           flutter-version: "3.22.3"
           channel: "stable"
 
-      - name: Flutter doctor
-        run: flutter doctor -v
+      - name: Flutter Doctor
+        run: flutter doctor
 
-      - name: Install deps
+      - name: Get Dependencies
         run: flutter pub get
 
-      - name: Analyze
-        run: flutter analyze
+      - name: Run Tests
+        run: flutter test --no-pub
 
-      - name: Run tests
-        run: flutter test
+      - name: Analyze
+        run: flutter analyze --no-pub
