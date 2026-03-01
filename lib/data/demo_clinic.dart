@@ -1,36 +1,24 @@
 // lib/data/demo_clinic.dart
-import '../models/event.dart';
+
+import '../domain/events/event_envelope.dart';
+import '../domain/events/event_factories.dart';
 
 class DemoClinic {
-  static const String clinicName = "Demo Dental Clinic";
-  static const String timezone = "Europe/Istanbul";
-  static const String defaultProvider = "Dr. Demo";
-  
-  // Demo events - bu silinebilir, sadece demo için
-  static List<Event> seedEvents = [
-    Event(
-      id: "demo-appointment-1",
-      type: EventType.appointmentCreated,
-      aggregateId: "appointment-001",
-      timestamp: DateTime.now().subtract(Duration(days: 1)),
-      actor: "system",
-      payload: {
-        "patientName": "Ayşe Yılmaz",
-        "date": "2026-02-28",
-        "time": "14:00",
-        "reason": "Routine checkup",
-      },
-    ),
-    Event(
-      id: "demo-document-1",
-      type: EventType.documentUploaded,
-      aggregateId: "appointment-001",
-      timestamp: DateTime.now(),
-      actor: "staff-001",
-      payload: {
-        "documentType": "ID card",
-        "fileName": "ayse_yilmaz_id.jpg",
-      },
-    ),
-  ];
+  static List<WorkflowEvent> generateDemoEvents(String appointmentId) {
+    return [
+      EventFactories.appointmentCreated(
+        appointmentId: appointmentId,
+        startAt: DateTime.now().add(const Duration(hours: 2)),
+        actor: 'clinic',
+      ),
+      WorkflowEvent(
+        id: 'demo_cancel',
+        type: 'appointment_cancelled',
+        ts: DateTime.now().toUtc(),
+        actor: 'clinic',
+        entity: EntityRef(kind: 'appointment', id: appointmentId),
+        data: {'reason': 'demo'},
+      ),
+    ];
+  }
 }
