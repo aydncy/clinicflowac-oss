@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
-
 import 'infrastructure/event_store/hive_event_store.dart';
 
 Future<void> main() async {
