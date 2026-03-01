@@ -201,6 +201,16 @@ Future layers may include:
 > It is NOT a medical product.  
 > Ships with demo data only.
 
+## 🎬 Demo
+
+WhatsApp simulation:
+- **Book Appointment** → `appointmentCreated` event appended → visible in list
+- **Cancel** → `appointmentCancelled` event
+- **Reschedule** → `appointmentRescheduled` event
+
+Event Sourcing model: every action is recorded and immutable.
+
+
 ## Requirements
 - Flutter SDK (stable)
 - Android emulator or device
