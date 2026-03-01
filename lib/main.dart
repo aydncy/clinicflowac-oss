@@ -192,6 +192,7 @@ class _DemoScreenState extends State<DemoScreen> {
           startAt: DateTime.now().add(const Duration(hours: 2)),
           actor: 'clinic',
         );
+        break;
       case 'appointment_cancelled':
         e = WorkflowEvent(
           id: 'demo_${DateTime.now().millisecondsSinceEpoch}',
@@ -201,6 +202,7 @@ class _DemoScreenState extends State<DemoScreen> {
           entity: EntityRef(kind: 'appointment', id: id),
           data: {'reason': 'demo'},
         );
+        break;
       case 'appointment_rescheduled':
         e = WorkflowEvent(
           id: 'demo_${DateTime.now().millisecondsSinceEpoch}',
@@ -215,6 +217,7 @@ class _DemoScreenState extends State<DemoScreen> {
                 .toIso8601String(),
           },
         );
+        break;
       default:
         e = WorkflowEvent(
           id: 'demo_${DateTime.now().millisecondsSinceEpoch}',
@@ -224,6 +227,7 @@ class _DemoScreenState extends State<DemoScreen> {
           entity: EntityRef(kind: 'appointment', id: id),
           data: {'note': type},
         );
+        break;
     }
     await _store.append(e);
     setState(() {});
