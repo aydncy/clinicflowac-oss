@@ -327,3 +327,10 @@ https://github.com/sponsors/aydncy
 # License
 
 MIT License
+
+## ❤️ Sponsors
+
+Support ClinicFlowAC OSS development:
+
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/aydncy?style=for-the-badge)](https://github.com/sponsors/aydncy)
+
