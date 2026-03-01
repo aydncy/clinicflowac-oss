@@ -38,17 +38,25 @@ class AppointmentProjection {
         case 'appointment_created':
           status = AppointmentStatus.created;
           scheduledAt = e.ts;
+          break;
         case 'appointment_rescheduled':
           status = AppointmentStatus.rescheduled;
           scheduledAt = e.ts;
+          break;
         case 'appointment_cancelled':
           status = AppointmentStatus.cancelled;
+          break;
         case 'message_captured':
           lastMessage = e.data['message'] as String?;
+          break;
         case 'document_requested':
           docsRequested++;
+          break;
         case 'consent_given':
           consentsGiven++;
+          break;
+        default:
+          break;
       }
     }
 
