@@ -1,4 +1,7 @@
 # ClinicFlowAC
+[![CI](https://github.com/aydncy/clinicflowac-oss/actions/workflows/ci.yml/badge.svg)](https://github.com/aydncy/clinicflowac-oss/actions)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/aydncy)](https://github.com/sponsors/aydncy)
+
 
 ## Open Execution Infrastructure for Small-Clinic Healthcare
 
