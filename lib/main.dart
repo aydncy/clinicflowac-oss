@@ -1,67 +1,237 @@
 import 'package:flutter/material.dart';
 
-import 'application/demo/demo_pipeline.dart';
+import 'domain/events/event_envelope.dart';
+import 'domain/events/event_factories.dart';
 import 'infrastructure/event_store/in_memory_event_store.dart';
 import 'services/whatsapp_service.dart';
-import 'domain/events/event_envelope.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const ClinicFlowAC());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class ClinicFlowAC extends StatelessWidget {
+  const ClinicFlowAC({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'ClinicFlowAC Demo',
+      title: 'ClinicFlowAC OSS Demo',
       theme: ThemeData(useMaterial3: true),
-      home: const DemoHomePage(),
+      home: const DemoScreen(),
     );
   }
 }
 
-class DemoHomePage extends StatefulWidget {
-  const DemoHomePage({super.key});
+class DemoScreen extends StatefulWidget {
+  const DemoScreen({super.key});
 
   @override
-  State<DemoHomePage> createState() => _DemoHomePageState();
+  State<DemoScreen> createState() => _DemoScreenState();
 }
 
-class _DemoHomePageState extends State<DemoHomePage> {
-  final store = InMemoryEventStore();
-  late final DemoPipeline pipeline = DemoPipeline(store: store);
+class _DemoScreenState extends State<DemoScreen> {
+  final _store = InMemoryEventStore();
 
-  String output = 'No events yet.';
-  String lastAppointmentId = 'unknown_sender';
+  final _controller = TextEditingController();
+  String _currentAppointmentId = 'patient_123';
 
-  late final WhatsAppService whatsapp = WhatsAppService(
+  late final WhatsAppService _whatsapp = WhatsAppService(
     onEvent: (WorkflowEvent e) async {
-      await pipeline.handleEvent(e);
-      lastAppointmentId = e.entity.id;
-
-      final timeline = await pipeline.loadTimelineForAppointment(lastAppointmentId);
-
+      await _store.append(e);
       setState(() {
-        output = _formatTimeline(timeline);
+        _currentAppointmentId = e.entity.id; // sender id -> appointment id (MVP)
       });
     },
   );
 
-  void runWebhookDemo() {
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<List<WorkflowEvent>> _loadEvents() {
+    return _store.loadByEntity(kind: 'appointment', id: _currentAppointmentId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('ClinicFlowAC Demo (WES)'),
+      ),
+      body: Column(
+        children: [
+          // WhatsApp Simulation
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    decoration: const InputDecoration(
+                      hintText: 'WhatsApp mesajı yaz... (örn: "randevu al 15:00")',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                FilledButton(
+                  onPressed: () => _simulateWhatsApp(_controller.text.trim()),
+                  child: const Text('Gönder'),
+                ),
+              ],
+            ),
+          ),
+
+          // Demo Buttons
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                FilledButton.tonal(
+                  onPressed: () => _addDemoEvent('appointment_created'),
+                  child: const Text('🩺 Randevu Al'),
+                ),
+                FilledButton.tonal(
+                  onPressed: () => _addDemoEvent('appointment_cancelled'),
+                  child: const Text('❌ İptal Et'),
+                ),
+                FilledButton.tonal(
+                  onPressed: () => _addDemoEvent('appointment_rescheduled'),
+                  child: const Text('🔄 Ertele'),
+                ),
+              ],
+            ),
+          ),
+
+          // Current Aggregate Info
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Appointment ID (MVP): $_currentAppointmentId',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const Divider(height: 1),
+
+          // Event List
+          Expanded(
+            child: FutureBuilder<List<WorkflowEvent>>(
+              future: _loadEvents(),
+              builder: (context, snapshot) {
+                final events = snapshot.data ?? const <WorkflowEvent>[];
+
+                if (events.isEmpty) {
+                  return const Center(
+                    child: Text('Henüz event yok. Demo butonlarını veya WhatsApp mesajını kullan.'),
+                  );
+                }
+
+                return ListView.builder(
+                  itemCount: events.length,
+                  itemBuilder: (context, i) {
+                    final e = events[i];
+                    return ListTile(
+                      leading: Icon(_getIcon(e.type)),
+                      title: Text(e.type),
+                      subtitle: Text(
+                        '${e.entity.kind}/${e.entity.id} • ${e.ts.toLocal()}',
+                      ),
+                      trailing: Text(e.actor),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _addDemoEvent(String type) async {
+    // Demo: appointmentId olarak current aggregate kullanıyoruz
+    final appointmentId = _currentAppointmentId;
+
+    WorkflowEvent e;
+    switch (type) {
+      case 'appointment_created':
+        e = EventFactories.appointmentCreated(
+          appointmentId: appointmentId,
+          startAt: DateTime.now().add(const Duration(hours: 2)),
+          actor: 'clinic',
+        );
+        break;
+
+      case 'appointment_cancelled':
+        e = WorkflowEvent(
+          id: 'demo_${DateTime.now().millisecondsSinceEpoch}',
+          type: 'appointment_cancelled',
+          ts: DateTime.now().toUtc(),
+          actor: 'clinic',
+          entity: EntityRef(kind: 'appointment', id: appointmentId),
+          data: {'reason': 'demo'},
+        );
+        break;
+
+      case 'appointment_rescheduled':
+        e = WorkflowEvent(
+          id: 'demo_${DateTime.now().millisecondsSinceEpoch}',
+          type: 'appointment_rescheduled',
+          ts: DateTime.now().toUtc(),
+          actor: 'clinic',
+          entity: EntityRef(kind: 'appointment', id: appointmentId),
+          data: {
+            'new_start_at': DateTime.now().add(const Duration(days: 1)).toUtc().toIso8601String(),
+          },
+        );
+        break;
+
+      default:
+        e = WorkflowEvent(
+          id: 'demo_${DateTime.now().millisecondsSinceEpoch}',
+          type: 'note_added',
+          ts: DateTime.now().toUtc(),
+          actor: 'clinic',
+          entity: EntityRef(kind: 'appointment', id: appointmentId),
+          data: {'note': type},
+        );
+        break;
+    }
+
+    await _store.append(e);
+    setState(() {});
+  }
+
+  void _simulateWhatsApp(String message) {
+    if (message.isEmpty) return;
+
+    // WhatsApp webhook simulation payload
     final payload = {
-      "entry": [
+      'entry': [
         {
-          "changes": [
+          'changes': [
             {
-              "value": {
-                "contacts": [
-                  {"wa_id": "905555000111"}
+              'value': {
+                'contacts': [
+                  {'wa_id': _currentAppointmentId}
                 ],
-                "messages": [
+                'messages': [
                   {
-                    "text": {"body": "Merhaba randevu almak istiyorum"}
+                    'text': {'body': message}
                   }
                 ]
               }
@@ -71,45 +241,27 @@ class _DemoHomePageState extends State<DemoHomePage> {
       ]
     };
 
-    whatsapp.handleWebhook(payload);
+    _whatsapp.handleWebhook(payload);
+    _controller.clear();
   }
 
-  String _formatTimeline(List<WorkflowEvent> events) {
-    final b = StringBuffer();
-    b.writeln('Appointment ID: $lastAppointmentId');
-    b.writeln('Event count: ${events.length}');
-    b.writeln('---');
-    for (final e in events) {
-      b.writeln('${e.ts.toIso8601String()}  ${e.type}');
-      b.writeln('  actor: ${e.actor}');
-      b.writeln('  entity: ${e.entity.kind}/${e.entity.id}');
-      b.writeln('  data: ${e.data}');
-      b.writeln('');
+  IconData _getIcon(String type) {
+    switch (type) {
+      case 'appointment_created':
+        return Icons.schedule;
+      case 'appointment_cancelled':
+        return Icons.cancel;
+      case 'appointment_rescheduled':
+        return Icons.update;
+      case 'message_received':
+      case 'message_captured':
+        return Icons.message;
+      case 'document_requested':
+        return Icons.description;
+      case 'consent_given':
+        return Icons.verified_user;
+      default:
+        return Icons.bolt;
     }
-    return b.toString();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('ClinicFlowAC - Event Pipeline Demo')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            FilledButton(
-              onPressed: runWebhookDemo,
-              child: const Text('Run WhatsApp Webhook Demo'),
-            ),
-            const SizedBox(height: 12),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Text(output),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
