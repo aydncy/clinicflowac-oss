@@ -31,7 +31,6 @@ class DemoScreen extends StatefulWidget {
 
 class _DemoScreenState extends State<DemoScreen> {
   final _store = InMemoryEventStore();
-
   final _controller = TextEditingController();
   String _currentAppointmentId = 'patient_123';
 
@@ -39,7 +38,7 @@ class _DemoScreenState extends State<DemoScreen> {
     onEvent: (WorkflowEvent e) async {
       await _store.append(e);
       setState(() {
-        _currentAppointmentId = e.entity.id; // sender id -> appointment id (MVP)
+        _currentAppointmentId = e.entity.id;
       });
     },
   );
@@ -71,7 +70,7 @@ class _DemoScreenState extends State<DemoScreen> {
                   child: TextField(
                     controller: _controller,
                     decoration: const InputDecoration(
-                      hintText: 'WhatsApp mesajı yaz... (örn: "randevu al 15:00")',
+                      hintText: 'Type a WhatsApp message... (e.g. "book appointment 15:00")',
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -79,7 +78,7 @@ class _DemoScreenState extends State<DemoScreen> {
                 const SizedBox(width: 10),
                 FilledButton(
                   onPressed: () => _simulateWhatsApp(_controller.text.trim()),
-                  child: const Text('Gönder'),
+                  child: const Text('Send'),
                 ),
               ],
             ),
@@ -94,18 +93,46 @@ class _DemoScreenState extends State<DemoScreen> {
               children: [
                 FilledButton.tonal(
                   onPressed: () => _addDemoEvent('appointment_created'),
-                  child: const Text('🩺 Randevu Al'),
+                  child: const Text('🩺 Book Appointment'),
                 ),
                 FilledButton.tonal(
                   onPressed: () => _addDemoEvent('appointment_cancelled'),
-                  child: const Text('❌ İptal Et'),
+                  child: const Text('❌ Cancel'),
                 ),
                 FilledButton.tonal(
                   onPressed: () => _addDemoEvent('appointment_rescheduled'),
-                  child: const Text('🔄 Ertele'),
+                  child: const Text('🔄 Reschedule'),
                 ),
               ],
             ),
+          ),
+
+          // Summary Cards
+          FutureBuilder<List<WorkflowEvent>>(
+            future: _loadEvents(),
+            builder: (context, snapshot) {
+              final events = snapshot.data ?? const <WorkflowEvent>[];
+              final status = events.isEmpty
+                  ? 'no events'
+                  : events.last.type.replaceAll('appointment_', '');
+              final lastMsg = events
+                  .where((e) => e.type == 'message_captured')
+                  .lastOrNull
+                  ?.data['message'] as String? ?? '—';
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  children: [
+                    _summaryCard('Status', status, Icons.info_outline),
+                    const SizedBox(width: 8),
+                    _summaryCard('Events', events.length.toString(), Icons.list_alt),
+                    const SizedBox(width: 8),
+                    _summaryCard('Last Msg', lastMsg, Icons.message_outlined),
+                  ],
+                ),
+              );
+            },
           ),
 
           // Current Aggregate Info
@@ -127,7 +154,7 @@ class _DemoScreenState extends State<DemoScreen> {
 
           const Divider(height: 1),
 
-          // Event List
+          // Event Timeline
           Expanded(
             child: FutureBuilder<List<WorkflowEvent>>(
               future: _loadEvents(),
@@ -136,7 +163,7 @@ class _DemoScreenState extends State<DemoScreen> {
 
                 if (events.isEmpty) {
                   return const Center(
-                    child: Text('Henüz event yok. Demo butonlarını veya WhatsApp mesajını kullan.'),
+                    child: Text('No events yet. Use the demo buttons or type a WhatsApp message.'),
                   );
                 }
 
@@ -163,7 +190,6 @@ class _DemoScreenState extends State<DemoScreen> {
   }
 
   Future<void> _addDemoEvent(String type) async {
-    // Demo: appointmentId olarak current aggregate kullanıyoruz
     final appointmentId = _currentAppointmentId;
 
     WorkflowEvent e;
@@ -195,7 +221,10 @@ class _DemoScreenState extends State<DemoScreen> {
           actor: 'clinic',
           entity: EntityRef(kind: 'appointment', id: appointmentId),
           data: {
-            'new_start_at': DateTime.now().add(const Duration(days: 1)).toUtc().toIso8601String(),
+            'new_start_at': DateTime.now()
+                .add(const Duration(days: 1))
+                .toUtc()
+                .toIso8601String(),
           },
         );
         break;
@@ -219,7 +248,6 @@ class _DemoScreenState extends State<DemoScreen> {
   void _simulateWhatsApp(String message) {
     if (message.isEmpty) return;
 
-    // WhatsApp webhook simulation payload
     final payload = {
       'entry': [
         {
@@ -263,5 +291,27 @@ class _DemoScreenState extends State<DemoScreen> {
       default:
         return Icons.bolt;
     }
+  }
+
+  Widget _summaryCard(String title, String value, IconData icon) {
+    return Expanded(
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 20),
+              const SizedBox(height: 4),
+              Text(title,
+                  style: const TextStyle(fontSize: 11, color: Colors.grey)),
+              Text(value,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
