@@ -1,12 +1,16 @@
+import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'infrastructure/event_store/hive_event_store.dart';
 import 'package:flutter/material.dart';
-
 import 'domain/events/event_envelope.dart';
 import 'domain/events/event_factories.dart';
 import 'domain/projections/appointment_projection.dart';
 import 'infrastructure/event_store/in_memory_event_store.dart';
 import 'services/whatsapp_service.dart';
 
-void main() {
+void main() Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+
   runApp(const ClinicFlowAC());
 }
 
@@ -31,9 +35,16 @@ class DemoScreen extends StatefulWidget {
 }
 
 class _DemoScreenState extends State<DemoScreen> {
-  final _store = InMemoryEventStore();
+  final _store = HiveEventStore();
   final _projection = AppointmentProjection();
   final _controller = TextEditingController();
+  @override
+void initState() {
+  super.initState();
+  _store.init().then((_) {
+    setState(() {});
+  });
+}
   String _currentAppointmentId = 'patient_123';
 
   late final WhatsAppService _whatsapp = WhatsAppService(
