@@ -1,5 +1,5 @@
-import 'event_store.dart';
 import '../../domain/events/event_envelope.dart';
+import 'event_store.dart';
 
 class InMemoryEventStore implements EventStore {
   final List<WorkflowEvent> _events = [];
@@ -14,17 +14,13 @@ class InMemoryEventStore implements EventStore {
     required String kind,
     required String id,
   }) async {
-    final out = _events
+    return _events
         .where((e) => e.entity.kind == kind && e.entity.id == id)
-        .toList()
-      ..sort((a, b) => a.ts.compareTo(b.ts));
-    return out;
+        .toList();
   }
 
   @override
-  Future<List<WorkflowEvent>> all() async {
-    final out = List<WorkflowEvent>.from(_events)
-      ..sort((a, b) => a.ts.compareTo(b.ts));
-    return out;
+  Future<List<WorkflowEvent>> loadAll() async {
+    return List.unmodifiable(_events);
   }
 }
