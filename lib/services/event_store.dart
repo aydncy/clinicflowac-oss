@@ -1,19 +1,29 @@
-import '../models/event.dart';
-import '../data/demo_clinic.dart';
+// lib/services/event_store.dart
+
+import '../domain/events/event_envelope.dart';
 
 class EventStore {
-  final List<Event> _events = [];
+  final List<WorkflowEvent> _events = [];
 
-  EventStore() {
-    _events.addAll(DemoClinic.seedEvents);
-  }
+  List<WorkflowEvent> get events => List.unmodifiable(_events);
 
-  List<Event> get events => List.unmodifiable(_events);
-
-  void append(Event event) {
+  void append(WorkflowEvent event) {
     _events.add(event);
   }
 
-  List<Event> eventsFor(String aggregateId) =>
-      _events.where((e) => e.aggregateId == aggregateId).toList();
+  List<WorkflowEvent> loadByEntity({
+    required String kind,
+    required String id,
+  }) {
+    final result = _events
+        .where((e) => e.entity.kind == kind && e.entity.id == id)
+        .toList()
+      ..sort((a, b) => a.ts.compareTo(b.ts));
+
+    return result;
+  }
+
+  void clear() {
+    _events.clear();
+  }
 }
