@@ -10,7 +10,7 @@ environment:
 
 dependencies:
   hive_ce: ^2.19.3
-  hive_ce_flutter: ^2.3.4
+hive_ce_flutter: 2.1.0
   flutter:
     sdk: flutter
   riverpod: ^2.4.9
