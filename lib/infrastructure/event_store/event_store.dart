@@ -8,5 +8,5 @@ abstract class EventStore {
     required String id,
   });
 
-  Future<List<WorkflowEvent>> all();
+  Future<List<WorkflowEvent>> loadAll();
 }
