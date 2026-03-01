@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'domain/events/event_envelope.dart';
 import 'domain/events/event_factories.dart';
+import 'domain/projections/appointment_projection.dart';
 import 'infrastructure/event_store/in_memory_event_store.dart';
 import 'services/whatsapp_service.dart';
 
@@ -31,15 +32,14 @@ class DemoScreen extends StatefulWidget {
 
 class _DemoScreenState extends State<DemoScreen> {
   final _store = InMemoryEventStore();
+  final _projection = AppointmentProjection();
   final _controller = TextEditingController();
   String _currentAppointmentId = 'patient_123';
 
   late final WhatsAppService _whatsapp = WhatsAppService(
     onEvent: (WorkflowEvent e) async {
       await _store.append(e);
-      setState(() {
-        _currentAppointmentId = e.entity.id;
-      });
+      setState(() => _currentAppointmentId = e.entity.id);
     },
   );
 
@@ -49,16 +49,13 @@ class _DemoScreenState extends State<DemoScreen> {
     super.dispose();
   }
 
-  Future<List<WorkflowEvent>> _loadEvents() {
-    return _store.loadByEntity(kind: 'appointment', id: _currentAppointmentId);
-  }
+  Future<List<WorkflowEvent>> _loadEvents() =>
+      _store.loadByEntity(kind: 'appointment', id: _currentAppointmentId);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('ClinicFlowAC Demo (WES)'),
-      ),
+      appBar: AppBar(title: const Text('ClinicFlowAC Demo (WES)')),
       body: Column(
         children: [
           // WhatsApp Simulation
@@ -107,28 +104,24 @@ class _DemoScreenState extends State<DemoScreen> {
             ),
           ),
 
-          // Summary Cards
+          // Summary Cards (Projection)
           FutureBuilder<List<WorkflowEvent>>(
             future: _loadEvents(),
             builder: (context, snapshot) {
               final events = snapshot.data ?? const <WorkflowEvent>[];
-              final status = events.isEmpty
-                  ? 'no events'
-                  : events.last.type.replaceAll('appointment_', '');
-              final lastMsg = events
-                  .where((e) => e.type == 'message_captured')
-                  .lastOrNull
-                  ?.data['message'] as String? ?? '—';
+              final snap = _projection.project(_currentAppointmentId, events);
 
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   children: [
-                    _summaryCard('Status', status, Icons.info_outline),
+                    _summaryCard('Status', snap.status.name, Icons.info_outline),
                     const SizedBox(width: 8),
-                    _summaryCard('Events', events.length.toString(), Icons.list_alt),
+                    _summaryCard('Events', snap.eventCount.toString(), Icons.list_alt),
                     const SizedBox(width: 8),
-                    _summaryCard('Last Msg', lastMsg, Icons.message_outlined),
+                    _summaryCard('Last Msg', snap.lastMessage ?? '—', Icons.message_outlined),
+                    const SizedBox(width: 8),
+                    _summaryCard('Docs', snap.docsRequested.toString(), Icons.description_outlined),
                   ],
                 ),
               );
@@ -190,36 +183,31 @@ class _DemoScreenState extends State<DemoScreen> {
   }
 
   Future<void> _addDemoEvent(String type) async {
-    final appointmentId = _currentAppointmentId;
-
+    final id = _currentAppointmentId;
     WorkflowEvent e;
     switch (type) {
       case 'appointment_created':
         e = EventFactories.appointmentCreated(
-          appointmentId: appointmentId,
+          appointmentId: id,
           startAt: DateTime.now().add(const Duration(hours: 2)),
           actor: 'clinic',
         );
-        break;
-
       case 'appointment_cancelled':
         e = WorkflowEvent(
           id: 'demo_${DateTime.now().millisecondsSinceEpoch}',
           type: 'appointment_cancelled',
           ts: DateTime.now().toUtc(),
           actor: 'clinic',
-          entity: EntityRef(kind: 'appointment', id: appointmentId),
+          entity: EntityRef(kind: 'appointment', id: id),
           data: {'reason': 'demo'},
         );
-        break;
-
       case 'appointment_rescheduled':
         e = WorkflowEvent(
           id: 'demo_${DateTime.now().millisecondsSinceEpoch}',
           type: 'appointment_rescheduled',
           ts: DateTime.now().toUtc(),
           actor: 'clinic',
-          entity: EntityRef(kind: 'appointment', id: appointmentId),
+          entity: EntityRef(kind: 'appointment', id: id),
           data: {
             'new_start_at': DateTime.now()
                 .add(const Duration(days: 1))
@@ -227,28 +215,23 @@ class _DemoScreenState extends State<DemoScreen> {
                 .toIso8601String(),
           },
         );
-        break;
-
       default:
         e = WorkflowEvent(
           id: 'demo_${DateTime.now().millisecondsSinceEpoch}',
           type: 'note_added',
           ts: DateTime.now().toUtc(),
           actor: 'clinic',
-          entity: EntityRef(kind: 'appointment', id: appointmentId),
+          entity: EntityRef(kind: 'appointment', id: id),
           data: {'note': type},
         );
-        break;
     }
-
     await _store.append(e);
     setState(() {});
   }
 
   void _simulateWhatsApp(String message) {
     if (message.isEmpty) return;
-
-    final payload = {
+    _whatsapp.handleWebhook({
       'entry': [
         {
           'changes': [
@@ -258,38 +241,27 @@ class _DemoScreenState extends State<DemoScreen> {
                   {'wa_id': _currentAppointmentId}
                 ],
                 'messages': [
-                  {
-                    'text': {'body': message}
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    };
-
-    _whatsapp.handleWebhook(payload);
+                  {'text': {'body': message}}
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    });
     _controller.clear();
   }
 
   IconData _getIcon(String type) {
     switch (type) {
-      case 'appointment_created':
-        return Icons.schedule;
-      case 'appointment_cancelled':
-        return Icons.cancel;
-      case 'appointment_rescheduled':
-        return Icons.update;
+      case 'appointment_created': return Icons.schedule;
+      case 'appointment_cancelled': return Icons.cancel;
+      case 'appointment_rescheduled': return Icons.update;
       case 'message_received':
-      case 'message_captured':
-        return Icons.message;
-      case 'document_requested':
-        return Icons.description;
-      case 'consent_given':
-        return Icons.verified_user;
-      default:
-        return Icons.bolt;
+      case 'message_captured': return Icons.message;
+      case 'document_requested': return Icons.description;
+      case 'consent_given': return Icons.verified_user;
+      default: return Icons.bolt;
     }
   }
 
@@ -297,17 +269,18 @@ class _DemoScreenState extends State<DemoScreen> {
     return Expanded(
       child: Card(
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(10),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 20),
+              Icon(icon, size: 18),
               const SizedBox(height: 4),
-              Text(title,
-                  style: const TextStyle(fontSize: 11, color: Colors.grey)),
-              Text(value,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                  overflow: TextOverflow.ellipsis),
+              Text(title, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+              Text(
+                value,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
           ),
         ),
