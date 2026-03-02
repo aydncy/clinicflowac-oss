@@ -1,4 +1,9 @@
 # ClinicFlowAC
+## Support this work
+
+If you find this project valuable, consider sponsoring the development of open verifiable workflow infrastructure:
+
+[![Sponsor](https://img.shields.io/badge/sponsor-❤️%20GitHub%20Sponsors-black)](https://github.com/sponsors/aydncy)
 [![CI](https://github.com/aydncy/clinicflowac-oss/actions/workflows/ci.yml/badge.svg)](https://github.com/aydncy/clinicflowac-oss/actions)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/aydncy)](https://github.com/sponsors/aydncy)
 
