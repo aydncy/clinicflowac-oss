@@ -1,3 +1,6 @@
+import 'exporters/ovwi_exporter.dart';
+import 'services/ovwi_client.dart';
+
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'infrastructure/event_store/hive_event_store.dart';
@@ -35,7 +38,23 @@ class _DemoScreenState extends State<DemoScreen> {
   @override
   void initState() {
     super.initState();
-    _store.init().then((_) => setState(() => _ready = true));
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    await _store.init();
+    setState(() => _ready = true);
+    await _testOvwiIntegration();
+  }
+
+  Future<void> _testOvwiIntegration() async {
+    try {
+      final workflow = exportToOvwi("test-workflow-001");
+      await sendWorkflowToOvwi(workflow);
+      debugPrint("OVWI INTEGRATION SUCCESS");
+    } catch (e) {
+      debugPrint("OVWI ERROR: $e");
+    }
   }
 
   @override
