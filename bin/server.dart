@@ -27,10 +27,10 @@ Future<void> main() async {
         return clinicRouter(request);
       });
 
-  final port = int.parse(Platform.environment['PORT'] ?? '8082');
+  final port = int.parse(Platform.environment['PORT'] ?? '8083');
 
   final server = await io.serve(handler, InternetAddress.anyIPv4, port);
 
   print('ClinicFlowAC server running on port ' + port.toString());
-  print('Health: http://localhost:8082/health');
+  print('Health: http://localhost:' + port.toString() + '/health');
 }
