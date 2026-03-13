@@ -1,0 +1,19 @@
+Subject: ClinicFlowAC - Enterprise Healthcare Platform (Free Trial Inside)
+
+Hi [CLINIC_NAME],
+
+We're launching ClinicFlowAC - an open-source, HIPAA-compliant healthcare platform.
+
+🎯 What you get:
+✓ Full source code (MIT license)
+✓ Live demo: clinicflowac.onrender.com
+✓ Free tier access (unlimited)
+✓ Professional support plans
+
+Try free: https://aydncy.gumroad.com/l/ClinicFlowAC
+
+Questions? Reply to this email.
+
+Best,
+Aydın Ceylan
+Founder, ClinicFlowAC

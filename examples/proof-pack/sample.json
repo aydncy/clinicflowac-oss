@@ -1,0 +1,55 @@
+{
+  "clinicflowac_proof_pack_version": "0.1",
+  "generated_at": "2026-02-28T12:00:00Z",
+  "appointment_id": "apt_demo_001",
+  "patient": {
+    "id": "pat_demo_001",
+    "display_name": "Demo Patient"
+  },
+  "events": [
+    {
+      "id": "evt_001",
+      "type": "appointment_created",
+      "ts": "2026-02-28T09:00:00Z",
+      "actor": "system",
+      "data": {
+        "scheduled_for": "2026-03-01T10:30:00Z",
+        "appointment_type": "consultation"
+      }
+    },
+    {
+      "id": "evt_002",
+      "type": "document_requested",
+      "ts": "2026-02-28T09:01:00Z",
+      "actor": "clinic",
+      "data": {
+        "doc_type": "id_card",
+        "required": true
+      }
+    },
+    {
+      "id": "evt_003",
+      "type": "document_uploaded",
+      "ts": "2026-02-28T09:03:00Z",
+      "actor": "patient",
+      "data": {
+        "doc_type": "id_card",
+        "status": "received"
+      }
+    },
+    {
+      "id": "evt_004",
+      "type": "consent_recorded",
+      "ts": "2026-02-28T09:05:00Z",
+      "actor": "patient",
+      "data": {
+        "consent_type": "treatment",
+        "status": "granted"
+      }
+    }
+  ],
+  "integrity": {
+    "mode": "demo",
+    "note": "Hash chaining and cryptographic signatures planned for v0.2."
+  }
+}

@@ -1,0 +1,88 @@
+
+CLINICFLOWAC QUICK START GUIDE
+
+═══════════════════════════════════════
+
+WHAT YOU'LL DO IN 5 MINUTES:
+
+1. Clone repository
+2. Install dependencies
+3. Run locally
+4. Test health endpoint
+5. Deploy options
+
+═══════════════════════════════════════
+
+STEP 1: CLONE REPOSITORY
+
+$ git clone https://github.com/aydncy/clinicflowac-oss.git
+$ cd clinicflowac-oss
+
+Time: 1 minute
+
+═══════════════════════════════════════
+
+STEP 2: INSTALL DEPENDENCIES
+
+$ dart pub get
+
+Requirements:
+- Dart 3.0+ (included with Flutter SDK)
+- Git
+
+Time: 2 minutes
+
+═══════════════════════════════════════
+
+STEP 3: RUN LOCALLY
+
+$ dart run bin/server.dart
+
+Output should show:
+✅ ClinicFlowAC Backend starting...
+✅ ClinicFlowAC running at http://localhost:8080
+
+Time: 1 minute
+
+═══════════════════════════════════════
+
+STEP 4: TEST IT
+
+$ curl http://localhost:8080/health
+
+Response:
+{"status":"healthy","service":"ClinicFlowAC","version":"1.0.0"}
+
+═══════════════════════════════════════
+
+STEP 5: NEXT OPTIONS
+
+Option A: Local Testing
+- Run locally for development
+- Perfect for learning
+
+Option B: Deploy to Cloud (FREE)
+- Render.com: https://render.com
+- Railway.app: https://railway.app
+- Takes 5 minutes
+
+Option C: Deploy to VPS ($5/month)
+- DigitalOcean: https://digitalocean.com
+- Linode: https://linode.com
+- AWS: https://aws.amazon.com
+
+═══════════════════════════════════════
+
+SUPPORT
+
+Need help?
+- GitHub Issues: https://github.com/aydncy/clinicflowac-oss/issues
+- Email: aydinceylan07@gmail.com
+- Discussions: https://github.com/aydncy/clinicflowac-oss/discussions
+
+═══════════════════════════════════════
+
+NEXT: See Deployment Guide for production setup
+
+Happy building! 🚀
+

@@ -1,0 +1,9 @@
+{
+  "workflow_id": "wf-001",
+  "patient": "John Doe",
+  "event_log": [
+    {"event": "appointment_created", "timestamp": 1772529303},
+    {"event": "consent_signed", "timestamp": 1772529400},
+    {"event": "document_uploaded", "timestamp": 1772529500}
+  ]
+}
