@@ -1,5 +1,5 @@
-[build]
-builder = "nixpacks"
+﻿[build]
+builder = "NIXPACKS"
 
 [deploy]
-startCommand = "dart run bin/main.dart"
+startCommand = "dart run bin/server.dart"

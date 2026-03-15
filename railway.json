@@ -1,5 +1,10 @@
-{
+﻿{
   "build": {
-    "builder": "nixpacks"
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "numReplicas": 1,
+    "startCommand": "dart run bin/server.dart",
+    "restartPolicyType": "ON_FAILURE"
   }
 }
