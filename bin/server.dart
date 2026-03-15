@@ -3,6 +3,8 @@ import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as io;
 import 'package:shelf_router/shelf_router.dart';
 import 'dart:convert';
+import 'package:postgres/postgres.dart';
+import 'package:dotenv/dotenv.dart';
 
 Middleware requestLoggerMiddleware() {
   return (Handler handler) {
@@ -17,6 +19,25 @@ Middleware requestLoggerMiddleware() {
 }
 
 Future<void> main() async {
+  final env = DotEnv()..load();
+  Connection? connection;
+
+  try {
+    connection = await Connection.open(
+      Endpoint(
+        host: env['DB_HOST'] ?? 'localhost',
+        port: int.parse(env['DB_PORT'] ?? '5432'),
+        database: env['DB_NAME'] ?? 'ovwi_dev',
+        username: env['DB_USER'] ?? 'postgres',
+        password: env['DB_PASSWORD'] ?? 'postgres'
+      ),
+      settings: ConnectionSettings(sslMode: SslMode.disable),
+    );
+    print('✅ PostgreSQL connected');
+  } catch (e) {
+    print('⚠️ Database: $e (using mock mode)');
+  }
+
   final router = Router();
 
   router.get('/health', (Request req) {
@@ -26,22 +47,58 @@ Future<void> main() async {
     );
   });
 
+  router.post('/auth/register', (Request request) async {
+    try {
+      final body = jsonDecode(await request.readAsString());
+      final name = body['name'] as String?;
+      final email = body['email'] as String?;
+      final phone = body['phone'] as String?;
+      final address = body['address'] as String?;
+
+      if (name == null || email == null) {
+        return Response(400, headers: {'Content-Type': 'application/json'}, body: jsonEncode({'success': false, 'error': 'name and email required'}));
+      }
+
+      if (connection != null) {
+        try {
+          final result = await connection.execute(
+            Sql.named('INSERT INTO clinics (id, name, email, phone, address, created_at) VALUES (gen_random_uuid(), @name, @email, @phone, @address, NOW()) RETURNING id, name, email, phone, address, created_at'),
+            parameters: {'name': name, 'email': email, 'phone': phone, 'address': address}
+          );
+          final row = result.first;
+          return Response(201, headers: {'Content-Type': 'application/json'}, body: jsonEncode({'success': true, 'data': {'clinic_id': row[0], 'name': row[1], 'email': row[2], 'phone': row[3], 'address': row[4], 'created_at': (row[5] as DateTime).toIso8601String()}}));
+        } catch (dbError) {
+          return Response(400, headers: {'Content-Type': 'application/json'}, body: jsonEncode({'success': false, 'error': dbError.toString()}));
+        }
+      }
+
+      return Response(201, headers: {'Content-Type': 'application/json'}, body: jsonEncode({'success': true, 'data': {'clinic_id': 'clinic_${DateTime.now().millisecondsSinceEpoch}', 'name': name, 'email': email, 'phone': phone, 'address': address}}));
+    } catch (e) {
+      return Response(400, headers: {'Content-Type': 'application/json'}, body: jsonEncode({'success': false, 'error': e.toString()}));
+    }
+  });
+
+  router.post('/auth/login', (Request request) async {
+    try {
+      final body = jsonDecode(await request.readAsString());
+      final email = body['email'] as String?;
+      final password = body['password'] as String?;
+
+      if (email == null || password == null) {
+        return Response(400, headers: {'Content-Type': 'application/json'}, body: jsonEncode({'success': false, 'error': 'email and password required'}));
+      }
+
+      return Response(200, headers: {'Content-Type': 'application/json'}, body: jsonEncode({'success': true, 'data': {'token': 'clinic_token_${DateTime.now().millisecondsSinceEpoch}', 'clinic_id': 'clinic_123'}}));
+    } catch (e) {
+      return Response(400, headers: {'Content-Type': 'application/json'}, body: jsonEncode({'success': false, 'error': e.toString()}));
+    }
+  });
+
   router.post('/api/v1/patients', (Request request) async {
     try {
-      final body = await request.readAsString();
-      final json = jsonDecode(body) as Map<String, dynamic>;
-
+      final body = jsonDecode(await request.readAsString());
       return Response.ok(
-        jsonEncode({
-          'id': 'pat_' + DateTime.now().millisecondsSinceEpoch.toString(),
-          'first_name': json['first_name'],
-          'last_name': json['last_name'],
-          'date_of_birth': json['date_of_birth'],
-          'phone': json['phone'],
-          'email': json['email'] ?? 'patient@example.eu',
-          'status': 'active',
-          'created_at': DateTime.now().toIso8601String(),
-        }),
+        jsonEncode({'success': true, 'data': {'patient_id': 'pat_${DateTime.now().millisecondsSinceEpoch}', 'name': body['name'], 'email': body['email'], 'status': 'active'}}),
         headers: {'Content-Type': 'application/json'},
       );
     } catch (e) {
@@ -49,119 +106,22 @@ Future<void> main() async {
     }
   });
 
-  router.get('/api/v1/patients', (Request request) async {
-    return Response.ok(
-      jsonEncode([
-        {
-          'id': 'pat_001',
-          'first_name': 'John',
-          'last_name': 'Anderson',
-          'date_of_birth': '1985-03-15',
-          'phone': '+43 664 123 4567',
-          'email': 'john.anderson@example.at',
-          'status': 'active'
-        },
-        {
-          'id': 'pat_002',
-          'first_name': 'Maria',
-          'last_name': 'Mueller',
-          'date_of_birth': '1990-07-22',
-          'phone': '+49 173 456 7890',
-          'email': 'maria.mueller@example.de',
-          'status': 'active'
-        },
-        {
-          'id': 'pat_003',
-          'first_name': 'Sophie',
-          'last_name': 'Dubois',
-          'date_of_birth': '1992-11-08',
-          'phone': '+33 6 12 34 56 78',
-          'email': 'sophie.dubois@example.fr',
-          'status': 'active'
-        },
-      ]),
-      headers: {'Content-Type': 'application/json'},
-    );
-  });
-
-  router.post('/api/v1/doctors', (Request request) async {
+  router.get('/api/v1/patients/<clinicId>', (Request request, String clinicId) async {
     try {
-      final body = await request.readAsString();
-      final json = jsonDecode(body) as Map<String, dynamic>;
-
       return Response.ok(
-        jsonEncode({
-          'id': 'doc_' + DateTime.now().millisecondsSinceEpoch.toString(),
-          'first_name': json['first_name'],
-          'last_name': json['last_name'],
-          'specialty': json['specialty'],
-          'license_number': json['license_number'] ?? 'LIC' + DateTime.now().millisecondsSinceEpoch.toString(),
-          'email': json['email'] ?? 'doctor@clinic.eu',
-          'phone': json['phone'] ?? '+43 1 234 5678',
-          'status': 'active',
-          'created_at': DateTime.now().toIso8601String(),
-        }),
+        jsonEncode({'success': true, 'data': [{'patient_id': 'pat_1', 'name': 'John Doe', 'email': 'john@example.com'}]}),
         headers: {'Content-Type': 'application/json'},
       );
     } catch (e) {
       return Response.internalServerError(body: jsonEncode({'error': e.toString()}));
     }
-  });
-
-  router.get('/api/v1/doctors', (Request request) async {
-    return Response.ok(
-      jsonEncode([
-        {
-          'id': 'doc_001',
-          'first_name': 'Dr. Klaus',
-          'last_name': 'Bergmann',
-          'specialty': 'Cardiology',
-          'license_number': 'MED-DE-001234',
-          'email': 'klaus.bergmann@clinic.de',
-          'phone': '+49 30 555 1234',
-          'status': 'active'
-        },
-        {
-          'id': 'doc_002',
-          'first_name': 'Dr. Elisabeth',
-          'last_name': 'Weber',
-          'specialty': 'Neurology',
-          'license_number': 'MED-AT-005678',
-          'email': 'elisabeth.weber@clinic.at',
-          'phone': '+43 1 555 5678',
-          'status': 'active'
-        },
-        {
-          'id': 'doc_003',
-          'first_name': 'Dr. Jean-Pierre',
-          'last_name': 'Laurent',
-          'specialty': 'Orthopedics',
-          'license_number': 'MED-FR-009012',
-          'email': 'jean.laurent@clinic.fr',
-          'phone': '+33 1 55 12 3456',
-          'status': 'active'
-        },
-      ]),
-      headers: {'Content-Type': 'application/json'},
-    );
   });
 
   router.post('/api/v1/appointments', (Request request) async {
     try {
-      final body = await request.readAsString();
-      final json = jsonDecode(body) as Map<String, dynamic>;
-
+      final body = jsonDecode(await request.readAsString());
       return Response.ok(
-        jsonEncode({
-          'id': 'apt_' + DateTime.now().millisecondsSinceEpoch.toString(),
-          'patient_id': json['patient_id'],
-          'doctor_id': json['doctor_id'],
-          'appointment_time': json['appointment_time'],
-          'duration_minutes': json['duration_minutes'] ?? 30,
-          'reason_for_visit': json['reason_for_visit'] ?? 'General Checkup',
-          'status': 'scheduled',
-          'created_at': DateTime.now().toIso8601String(),
-        }),
+        jsonEncode({'success': true, 'data': {'appointment_id': 'apt_${DateTime.now().millisecondsSinceEpoch}', 'status': 'scheduled'}}),
         headers: {'Content-Type': 'application/json'},
       );
     } catch (e) {
@@ -169,40 +129,9 @@ Future<void> main() async {
     }
   });
 
-  router.get('/api/v1/appointments', (Request request) async {
-    return Response.ok(
-      jsonEncode([
-        {
-          'id': 'apt_001',
-          'patient_id': 'pat_001',
-          'doctor_id': 'doc_001',
-          'appointment_time': '2026-03-20T10:00:00Z',
-          'duration_minutes': 30,
-          'reason_for_visit': 'Heart Checkup',
-          'status': 'scheduled'
-        },
-        {
-          'id': 'apt_002',
-          'patient_id': 'pat_002',
-          'doctor_id': 'doc_002',
-          'appointment_time': '2026-03-21T14:30:00Z',
-          'duration_minutes': 45,
-          'reason_for_visit': 'Neurological Consultation',
-          'status': 'scheduled'
-        },
-      ]),
-      headers: {'Content-Type': 'application/json'},
-    );
-  });
-
-  final handler = Pipeline()
-      .addMiddleware(requestLoggerMiddleware())
-      .addHandler(router);
-
-  final port = int.parse(Platform.environment['PORT'] ?? '8083');
-
-  final server = await io.serve(handler, InternetAddress.anyIPv4, port);
-
-  print('ClinicFlowAC server running on port ' + port.toString());
-  print('Health: http://localhost:' + port.toString() + '/health');
+  final handler = Pipeline().addMiddleware(requestLoggerMiddleware()).addHandler(router);
+  await io.serve(handler, InternetAddress.anyIPv4, 8083);
+  print('ClinicFlowAC server running on port 8083');
+  print('Health: http://localhost:8083/health');
 }
+
