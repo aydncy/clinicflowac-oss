@@ -326,3 +326,22 @@ MIT License
 ---
 
 **Building open infrastructure for regulated environments globally.** 🌍
+
+---
+
+## Monetization
+
+ClinicFlowAC can run standalone.
+
+For usage tracking and billing, OVWI is required.
+
+Access:
+https://aydncy.gumroad.com/l/ClinicFlowAC
+
+.env example:
+
+OVWI_URL=http://localhost:8081
+OVWI_API_KEY=your_api_key_here
+TENANT_ID=your_tenant_id
+
+---
