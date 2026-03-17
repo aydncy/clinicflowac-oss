@@ -1,3 +1,4 @@
+import 'package:test/test.dart';
 void main() {
   test('free user can access demo region only', () {
     final userTier = 'free';

@@ -1,77 +1,53 @@
+import 'dart:convert';
 import 'package:test/test.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   group('Load Testing', () {
-    test('Simulate 1000 concurrent appointments', () async {
+
+    test('1000 concurrent requests', () async {
+
       final stopwatch = Stopwatch()..start();
-      
-      // Simulate 1000 requests
-      int successCount = 0;
-      int failureCount = 0;
-      
-      for (int i = 0; i < 1000; i++) {
-        try {
-          // Simulate API call
-          await Future.delayed(Duration(milliseconds: 10));
-          successCount++;
-        } catch (e) {
-          failureCount++;
-        }
-      }
-      
+
+      final futures = List.generate(1000, (_) async {
+        final sw = Stopwatch()..start();
+
+        final response = await http.get(
+          Uri.parse('http://localhost:8083/health')
+        );
+
+        sw.stop();
+
+        return {
+          'status': response.statusCode,
+          'latency': sw.elapsedMilliseconds
+        };
+      });
+
+      final results = await Future.wait(futures);
+
       stopwatch.stop();
-      
-      print('✅ Load Test Results:');
-      print('   - Requests: 1000');
-      print('   - Success: $successCount');
-      print('   - Failed: $failureCount');
-      print('   - Time: ${stopwatch.elapsedMilliseconds}ms');
-      print('   - Throughput: ${(1000 / stopwatch.elapsedMilliseconds * 1000).toStringAsFixed(2)} req/sec');
-      
-      expect(successCount, greaterThan(950));
-    });
 
-    test('P99 latency test', () async {
-      final latencies = <int>[];
-      
-      for (int i = 0; i < 100; i++) {
-        final sw = Stopwatch()..start();
-        await Future.delayed(Duration(milliseconds: 5));
-        sw.stop();
-        latencies.add(sw.elapsedMilliseconds);
-      }
-      
+      final success = results.where((r) => r['status'] == 200).length;
+      final latencies = results.map((r) => r['latency'] as int).toList();
+
       latencies.sort();
+
+      final p50 = latencies[(latencies.length * 0.5).toInt()];
+      final p95 = latencies[(latencies.length * 0.95).toInt()];
       final p99 = latencies[(latencies.length * 0.99).toInt()];
-      
-      print('✅ Latency Test:');
-      print('   - P50: ${latencies[(latencies.length * 0.5).toInt()]}ms');
-      print('   - P95: ${latencies[(latencies.length * 0.95).toInt()]}ms');
-      print('   - P99: ${p99}ms');
-      
-      expect(p99, lessThan(50));
+
+      print('🚀 Real Load Test');
+      print('Requests: 1000');
+      print('Success: $success');
+      print('Time: ${stopwatch.elapsedMilliseconds}ms');
+      print('P50: ${p50}ms');
+      print('P95: ${p95}ms');
+      print('P99: ${p99}ms');
+
+      expect(success, greaterThan(900));
+      expect(p99, lessThan(3000));
     });
 
-    test('Database connection pool under load', () async {
-      final connectionTimes = <int>[];
-      
-      for (int i = 0; i < 100; i++) {
-        final sw = Stopwatch()..start();
-        // Simulate DB connection
-        await Future.delayed(Duration(milliseconds: 2));
-        sw.stop();
-        connectionTimes.add(sw.elapsedMilliseconds);
-      }
-      
-      connectionTimes.sort();
-      final avgTime = connectionTimes.reduce((a, b) => a + b) ~/ connectionTimes.length;
-      
-      print('✅ DB Connection Test:');
-      print('   - Avg connection time: ${avgTime}ms');
-      print('   - Max: ${connectionTimes.last}ms');
-      print('   - Min: ${connectionTimes.first}ms');
-      
-      expect(avgTime, lessThan(10));
-    });
   });
 }

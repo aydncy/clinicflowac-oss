@@ -7,7 +7,7 @@ class ClinicRouter {
   Router get router {
     final router = Router();
     router.get('/health', _healthCheck);
-    router.post('/auth/register', _register);
+    router.post('/register', _register);
     return router;
   }
 

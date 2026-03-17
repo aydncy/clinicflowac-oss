@@ -2,12 +2,17 @@ import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 import 'dart:convert';
 
+final List<Map<String, dynamic>> patients = [];
+
 class PatientRouter {
+
   Router get router {
     final router = Router();
+
     router.get('/list/<clinic_id>', _getPatients);
     router.post('/create', _createPatient);
     router.get('/detail/<clinic_id>/<patient_id>', _getPatient);
+
     return router;
   }
 
@@ -15,38 +20,47 @@ class PatientRouter {
     return Response.ok(jsonEncode({
       'success': true,
       'clinic_id': clinicId,
-      'patients': [
-        {'id': 'p1', 'name': 'Patient 1', 'email': 'p1@clinic.com'},
-        {'id': 'p2', 'name': 'Patient 2', 'email': 'p2@clinic.com'},
-      ],
-    }));
+      'patients': patients,
+    }), headers: {'Content-Type': 'application/json'});
   }
 
   Future<Response> _createPatient(Request request) async {
     try {
       final payload = jsonDecode(await request.readAsString());
+
+      final patient = {
+        'id': 'pat_' + DateTime.now().millisecondsSinceEpoch.toString(),
+        'name': payload['name'],
+        'email': payload['email']
+      };
+
+      patients.add(patient);
+
       return Response.ok(jsonEncode({
         'success': true,
-        'patient_id': 'pat_${DateTime.now().millisecondsSinceEpoch}',
-        'name': payload['name'],
-        'email': payload['email'],
-      }));
+        'patient': patient
+      }), headers: {'Content-Type': 'application/json'});
+
     } catch (e) {
       return Response.badRequest(body: jsonEncode({'error': e.toString()}));
     }
   }
 
   Future<Response> _getPatient(Request request, String clinicId, String patientId) async {
+
+    final patient = patients.firstWhere(
+      (p) => p['id'] == patientId,
+      orElse: () => {},
+    );
+
+    if (patient.isEmpty) {
+      return Response.notFound(jsonEncode({'error': 'Patient not found'}));
+    }
+
     return Response.ok(jsonEncode({
       'success': true,
-      'patient': {
-        'id': patientId,
-        'clinic_id': clinicId,
-        'name': 'Patient Name',
-        'email': 'patient@clinic.com',
-        'phone': '5551234567',
-        'medical_history': [],
-      },
-    }));
+      'patient': patient
+    }), headers: {'Content-Type': 'application/json'});
   }
+
 }
