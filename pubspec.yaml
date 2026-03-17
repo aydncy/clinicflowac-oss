@@ -1,7 +1,6 @@
 name: clinicflowac
-description: 'Clinic Management Platform'
+description: Clinic Management Platform
 version: 1.0.0
-publish_to: 'none'
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -9,17 +8,10 @@ environment:
 dependencies:
   shelf: ^1.4.1
   shelf_router: ^1.1.3
-  postgres: ^2.4.6
+  postgres: ^3.5.9
   dotenv: ^4.1.0
-  crypto: ^3.0.3
-  dart_jsonwebtoken: ^2.12.0
-  uuid: ^4.0.0
-  http: ^1.1.0
-  json_annotation: ^4.8.0
-  args: ^2.4.2
+  uuid: ^4.5.3
+  http: ^1.6.0
 
 dev_dependencies:
   lints: ^2.1.0
-  test: ^1.24.0
-  build_runner: ^2.4.0
-  json_serializable: ^6.7.0

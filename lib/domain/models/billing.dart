@@ -16,7 +16,7 @@ class BillItem {
 
   double get total => amount * quantity;
 
-  Map<String, dynamic> toJson() => {
+  
     'description': description,
     'amount': amount,
     'quantity': quantity,
@@ -24,7 +24,7 @@ class BillItem {
     'total': total,
   };
 
-  factory BillItem.fromJson(Map<String, dynamic> json) => BillItem(
+  
     description: json['description'] as String,
     amount: json['amount'] as double,
     quantity: json['quantity'] as int,
@@ -64,7 +64,7 @@ class Bill {
   double get subtotal => items.fold(0, (sum, item) => sum + item.total);
   double get total => subtotal - discount + tax;
 
-  Map<String, dynamic> toJson() => {
+  
     'id': id,
     'patient_id': patientId,
     'appointment_id': appointmentId,
@@ -81,7 +81,7 @@ class Bill {
     'notes': notes,
   };
 
-  factory Bill.fromJson(Map<String, dynamic> json) => Bill(
+  
     id: json['id'] as String,
     patientId: json['patient_id'] as String,
     appointmentId: json['appointment_id'] as String,

@@ -45,7 +45,7 @@ class Patient {
     return age;
   }
 
-  Map<String, dynamic> toJson() => {
+  
     'id': id,
     'first_name': firstName,
     'last_name': lastName,
@@ -63,7 +63,7 @@ class Patient {
     'last_visit': lastVisit?.toIso8601String(),
   };
 
-  factory Patient.fromJson(Map<String, dynamic> json) => Patient(
+  
     id: json['id'] as String,
     firstName: json['first_name'] as String,
     lastName: json['last_name'] as String,

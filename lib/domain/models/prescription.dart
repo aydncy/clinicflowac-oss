@@ -13,7 +13,7 @@ class Medication {
     this.instructions,
   });
 
-  Map<String, dynamic> toJson() => {
+  
     'name': name,
     'dosage': dosage,
     'frequency': frequency,
@@ -21,7 +21,7 @@ class Medication {
     'instructions': instructions,
   };
 
-  factory Medication.fromJson(Map<String, dynamic> json) => Medication(
+  
     name: json['name'] as String,
     dosage: json['dosage'] as String,
     frequency: json['frequency'] as String,
@@ -57,7 +57,7 @@ class Prescription {
     this.notes,
   });
 
-  Map<String, dynamic> toJson() => {
+  
     'id': id,
     'appointment_id': appointmentId,
     'patient_id': patientId,
@@ -70,7 +70,7 @@ class Prescription {
     'notes': notes,
   };
 
-  factory Prescription.fromJson(Map<String, dynamic> json) => Prescription(
+  
     id: json['id'] as String,
     appointmentId: json['appointment_id'] as String,
     patientId: json['patient_id'] as String,

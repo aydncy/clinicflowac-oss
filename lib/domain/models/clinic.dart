@@ -23,7 +23,7 @@ class Clinic {
     required this.isActive,
   });
 
-  Map<String, dynamic> toJson() => {
+  
     'id': id,
     'name': name,
     'address': address,
@@ -36,7 +36,7 @@ class Clinic {
     'is_active': isActive,
   };
 
-  factory Clinic.fromJson(Map<String, dynamic> json) => Clinic(
+  
     id: json['id'] as String,
     name: json['name'] as String,
     address: json['address'] as String,

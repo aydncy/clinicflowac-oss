@@ -21,7 +21,7 @@ class User {
     required this.isActive,
   });
 
-  Map<String, dynamic> toJson() => {
+  
     'id': id,
     'email': email,
     'name': name,
@@ -32,7 +32,7 @@ class User {
     'is_active': isActive,
   };
 
-  factory User.fromJson(Map<String, dynamic> json) => User(
+  
     id: json['id'] as String,
     email: json['email'] as String,
     name: json['name'] as String,

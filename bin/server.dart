@@ -1,33 +1,35 @@
+﻿import 'dart:convert';
 import 'package:shelf/shelf.dart';
-import 'package:shelf/shelf_io.dart' as shelf_io;
-import 'package:shelf_router/shelf_router.dart';
-import 'dart:io';
-import 'dart:convert';
-import 'package:dotenv/dotenv.dart';
-import '../lib/router/clinic_router.dart';
-import '../lib/router/payment_router.dart';
-import '../lib/router/patient_router.dart';
-import '../lib/router/appointment_router.dart';
+import 'package:shelf/shelf_io.dart' as io;
+import '../lib/db.dart';
+import '../lib/ovwi_client.dart';
 
 void main() async {
-  final env = DotEnv()..load();
-  final port = int.parse(env['CLINICFLOW_PORT'] ?? '8083');
-  final host = InternetAddress.anyIPv4;
-  
-  final clinicRouter = ClinicRouter();
-  final paymentRouter = PaymentRouter();
-  final patientRouter = PatientRouter();
-  final appointmentRouter = AppointmentRouter();
-  
-  final router = Router()
-    ..mount('/auth', clinicRouter.router)
-    ..mount('/payments', paymentRouter.router)
-    ..mount('/patients', patientRouter.router)
-    ..mount('/appointments', appointmentRouter.router)
-    ..get('/health', (_) => Response.ok(jsonEncode({'status': 'ok'})));
-  
-  final handler = logRequests()(router);
-  
-  final server = await shelf_io.serve(handler, host, port);
-  print('ClinicFlowAC running on port: $port');
+  final db = DB();
+  await db.connect();
+
+  final ovwi = OVWIClient('http://localhost:8081');
+
+  final handler = Pipeline()
+      .addMiddleware(logRequests())
+      .addHandler((Request request) async {
+    if (request.method == 'POST' && request.url.path == 'patients') {
+      final body = await request.readAsString();
+      final data = jsonDecode(body);
+
+      final id = await db.createPatient(data['name']);
+
+      await ovwi.sendEvent(
+        'patient_created',
+        {'clinic_id': 'clinic_1'}
+      );
+
+      return Response.ok(jsonEncode({'id': id}));
+    }
+
+    return Response.notFound('Not Found');
+  });
+
+  final server = await io.serve(handler, 'localhost', 8082);
+  print('SERVER RUNNING http://localhost:8082');
 }

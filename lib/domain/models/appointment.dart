@@ -29,7 +29,7 @@ class Appointment {
     this.completedAt,
   });
 
-  Map<String, dynamic> toJson() => {
+  
     'id': id,
     'patient_id': patientId,
     'clinic_id': clinicId,
@@ -44,7 +44,7 @@ class Appointment {
     'completed_at': completedAt?.toIso8601String(),
   };
 
-  factory Appointment.fromJson(Map<String, dynamic> json) => Appointment(
+  
     id: json['id'] as String,
     patientId: json['patient_id'] as String,
     clinicId: json['clinic_id'] as String,
