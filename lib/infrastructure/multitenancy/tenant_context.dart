@@ -21,7 +21,7 @@ class TenantContext {
   
   String get schemaName => 'tenant_$tenantId';
 
-  Map<String, dynamic> toJson() => {
+  
     'tenantId': tenantId,
     'clinicId': clinicId,
     'clinicName': clinicName,

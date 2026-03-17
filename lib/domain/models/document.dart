@@ -28,7 +28,7 @@ class Document {
     this.verifiedAt,
   });
 
-  Map<String, dynamic> toJson() => {
+  
     'id': id,
     'appointment_id': appointmentId,
     'uploaded_by': uploadedBy,
@@ -42,7 +42,7 @@ class Document {
     'verified_at': verifiedAt?.toIso8601String(),
   };
 
-  factory Document.fromJson(Map<String, dynamic> json) => Document(
+  
     id: json['id'] as String,
     appointmentId: json['appointment_id'] as String,
     uploadedBy: json['uploaded_by'] as String,

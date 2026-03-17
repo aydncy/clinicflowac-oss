@@ -9,13 +9,13 @@ class Diagnosis {
     required this.isPrimary,
   });
 
-  Map<String, dynamic> toJson() => {
+  
     'icd_code': icdCode,
     'description': description,
     'is_primary': isPrimary,
   };
 
-  factory Diagnosis.fromJson(Map<String, dynamic> json) => Diagnosis(
+  
     icdCode: json['icd_code'] as String,
     description: json['description'] as String,
     isPrimary: json['is_primary'] as bool? ?? false,
@@ -49,7 +49,7 @@ class MedicalRecord {
     required this.createdAt,
   });
 
-  Map<String, dynamic> toJson() => {
+  
     'id': id,
     'patient_id': patientId,
     'appointment_id': appointmentId,
@@ -63,7 +63,7 @@ class MedicalRecord {
     'created_at': createdAt.toIso8601String(),
   };
 
-  factory MedicalRecord.fromJson(Map<String, dynamic> json) => MedicalRecord(
+  
     id: json['id'] as String,
     patientId: json['patient_id'] as String,
     appointmentId: json['appointment_id'] as String,

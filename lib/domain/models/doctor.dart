@@ -34,7 +34,7 @@ class Doctor {
   String get fullName => '$firstName $lastName';
   String get specialtyName => specialty.toString().split('.').last;
 
-  Map<String, dynamic> toJson() => {
+  
     'id': id,
     'first_name': firstName,
     'last_name': lastName,
@@ -50,7 +50,7 @@ class Doctor {
     'created_at': createdAt.toIso8601String(),
   };
 
-  factory Doctor.fromJson(Map<String, dynamic> json) => Doctor(
+  
     id: json['id'] as String,
     firstName: json['first_name'] as String,
     lastName: json['last_name'] as String,

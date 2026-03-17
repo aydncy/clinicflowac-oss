@@ -15,9 +15,9 @@ class EntityRef {
 
   const EntityRef({required this.kind, required this.id});
 
-  Map<String, dynamic> toJson() => {"kind": kind, "id": id};
+  
 
-  factory EntityRef.fromJson(Map<String, dynamic> json) => EntityRef(
+  
         kind: json["kind"] as String,
         id: json["id"] as String,
       );
@@ -41,7 +41,7 @@ class WorkflowEvent {
     required this.data,
   });
 
-  Map<String, dynamic> toJson() => {
+  
         "id": id,
         "type": type,
         "ts": ts.toUtc().toIso8601String(),
@@ -50,7 +50,7 @@ class WorkflowEvent {
         "data": data,
       };
 
-  factory WorkflowEvent.fromJson(Map<String, dynamic> json) => WorkflowEvent(
+  
         id: json["id"] as String,
         type: json["type"] as String,
         ts: DateTime.parse(json["ts"] as String).toUtc(),
