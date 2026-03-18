@@ -1,35 +1,46 @@
-﻿import 'dart:convert';
-import 'package:shelf/shelf.dart';
-import 'package:shelf/shelf_io.dart' as io;
-import '../lib/db.dart';
-import '../lib/ovwi_client.dart';
+router.get('/verify-key', (Request req) async {
+  final key = req.url.queryParameters['key'];
 
-void main() async {
-  final db = DB();
-  await db.connect();
+  final result = await db.query(
+    "SELECT email, usage_count, plan FROM api_keys WHERE api_key=@k",
+    substitutionValues: {'k': key},
+  );
 
-  final ovwi = OVWIClient('http://localhost:8081');
+  if (result.isEmpty) {
+    return Response.forbidden('invalid');
+  }
 
-  final handler = Pipeline()
-      .addMiddleware(logRequests())
-      .addHandler((Request request) async {
-    if (request.method == 'POST' && request.url.path == 'patients') {
-      final body = await request.readAsString();
-      final data = jsonDecode(body);
+  final row = result.first;
+  final email = row[0] as String;
+  final usage = (row[1] as int) + 1;
+  final plan = row[2] as String;
 
-      final id = await db.createPatient(data['name']);
+  final limit = plan == 'pro' ? 1000 : 5;
 
-      await ovwi.sendEvent(
-        'patient_created',
-        {'clinic_id': 'clinic_1'}
-      );
+  await db.query(
+    "UPDATE api_keys SET usage_count=@u WHERE api_key=@k",
+    substitutionValues: {'u': usage, 'k': key},
+  );
 
-      return Response.ok(jsonEncode({'id': id}));
-    }
+  await db.query(
+    "INSERT INTO events (email, event_type, usage) VALUES (@e, 'request', @u)",
+    substitutionValues: {'e': email, 'u': usage},
+  );
 
-    return Response.notFound('Not Found');
-  });
+  if (usage > limit) {
+    await db.query(
+      "INSERT INTO events (email, event_type, usage) VALUES (@e, 'limit_reached', @u)",
+      substitutionValues: {'e': email, 'u': usage},
+    );
 
-  final server = await io.serve(handler, 'localhost', 8082);
-  print('SERVER RUNNING http://localhost:8082');
-}
+    final upgradeUrl =
+        "https://gumroad.com/l/ovwi"
+        "?email=$email"
+        "&key=$key"
+        "&usage=$usage";
+
+    return Response.redirect(Uri.parse(upgradeUrl), statusCode: 302);
+  }
+
+  return Response.ok('ok');
+});

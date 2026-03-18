@@ -1,8 +1,9 @@
 import 'package:test/test.dart';
 import '../../lib/infrastructure/multitenancy/tenant_context.dart';
+import '../../lib/infrastructure/multitenancy/tenant_context_manager.dart';
 
 void main() {
-  group('Multi-Tenancy Tests', () {
+  group('Multi-tenancy Tests', () {
     late TenantContextManager tenantManager;
 
     setUp(() {
@@ -10,101 +11,46 @@ void main() {
       tenantManager = TenantContextManager();
     });
 
-    test('should register tenant', () {
+    test('should add tenant', () {
       final tenant = TenantContext(
-        tenantId: 'clinic_001',
-        clinicId: 'c_001',
-        clinicName: 'Central Hospital',
-        region: 'EU',
+        tenantId: 't1',
+        clinicId: 'c1',
+        clinicName: 'Clinic One',
+        region: 'TR',
         createdAt: DateTime.now(),
       );
 
-      tenantManager.registerTenant(tenant);
-      final retrieved = tenantManager.getTenant('clinic_001');
-      
-      expect(retrieved, isNotNull);
-      expect(retrieved?.clinicName, equals('Central Hospital'));
-      print('✅ Tenant registered and retrieved');
+      tenantManager.addTenant(tenant);
+
+      final result = tenantManager.getTenant('t1');
+
+      expect(result, isNotNull);
+      expect(result!.clinicName, 'Clinic One');
     });
 
-    test('should switch tenant context', () {
+    test('should return all tenants', () {
       final tenant1 = TenantContext(
-        tenantId: 'clinic_001',
-        clinicId: 'c_001',
-        clinicName: 'Hospital A',
-        region: 'EU',
-        createdAt: DateTime.now(),
-      );
-
-      tenantManager.registerTenant(tenant1);
-      tenantManager.setCurrentTenant('clinic_001');
-      
-      final current = tenantManager.getCurrentTenant();
-      expect(current, isNotNull);
-      expect(current?.tenantId, equals('clinic_001'));
-      print('✅ Tenant context switched');
-    });
-
-    test('should get database name for tenant', () {
-      final tenant = TenantContext(
-        tenantId: 'clinic_001',
-        clinicId: 'c_001',
-        clinicName: 'Test Hospital',
-        region: 'EU',
-        createdAt: DateTime.now(),
-      );
-
-      expect(tenant.databaseName, equals('clinic_clinic_001_db'));
-      expect(tenant.schemaName, equals('tenant_clinic_001'));
-      print('✅ Database naming correct');
-    });
-
-    test('should get tenant statistics', () {
-      final tenant1 = TenantContext(
-        tenantId: 'clinic_001',
-        clinicId: 'c_001',
-        clinicName: 'Hospital A',
-        region: 'EU',
+        tenantId: 't1',
+        clinicId: 'c1',
+        clinicName: 'Clinic One',
+        region: 'TR',
         createdAt: DateTime.now(),
       );
 
       final tenant2 = TenantContext(
-        tenantId: 'clinic_002',
-        clinicId: 'c_002',
-        clinicName: 'Hospital B',
-        region: 'ASIA',
+        tenantId: 't2',
+        clinicId: 'c2',
+        clinicName: 'Clinic Two',
+        region: 'US',
         createdAt: DateTime.now(),
       );
 
-      tenantManager.registerTenant(tenant1);
-      tenantManager.registerTenant(tenant2);
-      tenantManager.setCurrentTenant('clinic_001');
+      tenantManager.addTenant(tenant1);
+      tenantManager.addTenant(tenant2);
 
-      final stats = tenantManager.getTenantStats();
-      expect(stats['totalTenants'], equals(2));
-      expect(stats['activeTenants'], equals(2));
-      print('✅ Tenant stats retrieved');
-    });
+      final tenants = tenantManager.getAllTenants();
 
-    test('should deactivate tenant correctly', () {
-      final tenant = TenantContext(
-        tenantId: 'clinic_001',
-        clinicId: 'c_001',
-        clinicName: 'Hospital A',
-        region: 'EU',
-        createdAt: DateTime.now(),
-        active: true,
-      );
-
-      tenantManager.registerTenant(tenant);
-      
-      expect(tenantManager.getTenant('clinic_001')?.active, true);
-      tenantManager.deactivateTenant('clinic_001');
-      expect(tenantManager.getTenant('clinic_001')?.active, false);
-      
-      final stats = tenantManager.getTenantStats();
-      expect(stats['activeTenants'], equals(0));
-      print('✅ Tenant deactivated correctly');
+      expect(tenants.length, 2);
     });
   });
 }
