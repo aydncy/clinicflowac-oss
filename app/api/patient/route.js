@@ -11,24 +11,13 @@ export async function POST(req) {
   const { data, error } = await supabase
     .from('patients')
     .insert([{ name, email }])
-    .select()
 
-  if (error) {
-    return Response.json({ ok: false, error })
-  }
+  if (error) return Response.json({ ok: false })
 
-  return Response.json({ ok: true, data })
+  return Response.json({ ok: true })
 }
 
 export async function GET() {
-  const { data, error } = await supabase
-    .from('patients')
-    .select('*')
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    return Response.json({ ok: false, error })
-  }
-
+  const { data } = await supabase.from('patients').select('*')
   return Response.json({ ok: true, data })
 }

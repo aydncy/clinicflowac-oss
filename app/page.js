@@ -45,3 +45,21 @@ function PatientForm() {
 export default function Wrapper() {
   return <PatientForm />
 }
+
+async function addPatient() {
+  await fetch('/api/patient', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ name: 'Test', email: 'test@test.com' })
+  })
+}
+
+async function loadPatients() {
+  const res = await fetch('/api/patient')
+  const json = await res.json()
+  console.log(json)
+}
+
+<button onClick={addPatient}>Add Test Patient</button>
+<button onClick={loadPatients}>Load Patients</button>
+
